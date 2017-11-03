@@ -1,0 +1,159 @@
+﻿@model FFCJardinagens.Models.Orcamento
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Adicionar</h2>
+
+<div class="divCart">
+    Total Items: <span id="spnCart">@ViewBag.cartCount</span>
+</div>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Orçamento</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClienteID, "Selecione um cliente", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.ClienteID, (SelectList)ViewBag.Clientes, "Selecione um cliente", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.ClienteID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Quantidade, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Quantidade, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Quantidade, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Descriminação, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Descriminação, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Descriminação, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProdutoUnidade, "Produto Unidade", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProdutoUnidade, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProdutoUnidade, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProdutoTotal, "Produto Total", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProdutoTotal, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProdutoTotal, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Adicionar" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+
+}
+
+
+<div class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span><span class="sr-only">Close</span>
+                </button> <h4 class="modal-title">Modal title</h4>
+            </div> <div class="modal-body"> <p>One fine body…</p> </div> <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div>
+    @Html.ActionLink("Voltar para lista de clientes", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+
+            $('.divAddCart').on('click', function () {
+                var getItemId = parseInt($(this).closest('td').prop('id'));
+                var getUserName = $('.divName').html();
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    url: 'Home/AddCart',
+                    data: "{ 'itemId':' " + getItemId + "' }",
+                    success: function (data) {
+                        $('#spnCart').html(data)
+                    },
+                    error: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $('#spnCart').on('click', function () {
+                var getName = $('.divName').html();
+                var url = "/Orcamentos/GetCartItems/";
+                var ClienteID = $('#ClienteID').val();
+                debugger;
+                $.ajax({
+                    url: url,
+                    data: { ClienteID: ClienteID },
+                    cache: false,
+                    type: "POST",
+                    success: function (data) {
+                        debugger;
+                        $('#cartList').html(data);
+                        $(".modal").modal();
+                    },
+                    error: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $(document).delegate('.cartDel', 'click', function () {
+                var DeleteItem = parseInt($(this).closest('tr').prop('id'));
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    url: '/Home/DeleteCart',
+                    data: "{ 'itemId':' " + DeleteItem + "' }",
+                    success: function (data) {
+                        $('#exampleModal').html(data);
+                        $('#spnCart').html($(data).find('#cartList tbody tr').length);
+                        $('#exampleModal').modal({
+                            backdrop: false
+                        });
+                    },
+                    error: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+        });
+    </script>
+
+}
